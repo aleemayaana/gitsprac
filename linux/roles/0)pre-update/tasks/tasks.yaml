@@ -1,0 +1,75 @@
+---
+- name: Display precheck banner
+  debug:
+    msg: "Starting prechecks on {{ inventory_hostname }}"
+
+- name: Check root filesystem usage
+  shell: |
+    df / | tail -1 | awk '{print $5}' | sed 's/%//'
+  register: root_usage
+  changed_when: false
+
+- name: Display root usage
+  debug:
+    msg: "Root filesystem usage is {{ root_usage.stdout }}%"
+
+- name: Fail if root usage exceeds threshold
+  fail:
+    msg: "Root filesystem exceeded threshold"
+  when: root_usage.stdout | int > 80
+
+- name: Check /boot free space
+  shell: |
+    df -BM /boot | tail -1 | awk '{print $4}' | sed 's/M//'
+  register: boot_free
+  changed_when: false
+
+- name: Display /boot free space
+  debug:
+    msg: "/boot free space is {{ boot_free.stdout }} MB"
+
+- name: Fail if /boot free space less than 1GB
+  fail:
+    msg: "/boot free space below 1GB"
+  when: boot_free.stdout | int < 1024
+
+- name: Check /boot usage percentage
+  shell: |
+    df /boot | tail -1 | awk '{print $5}' | sed 's/%//'
+  register: boot_usage
+  changed_when: false
+
+- name: Display /boot usage
+  debug:
+    msg: "/boot usage is {{ boot_usage.stdout }}%"
+
+- name: Fail if /boot usage exceeds threshold
+  fail:
+    msg: "/boot usage exceeded threshold"
+  when: boot_usage.stdout | int > 80
+
+- name: Check yum/dnf lock
+  shell: |
+    pgrep -f "yum|dnf|rpm"
+  register: yum_lock
+  failed_when: false
+  changed_when: false
+
+- name: Fail if yum process already running
+  fail:
+    msg: "Yum/DNF process already running"
+  when: yum_lock.rc == 0
+
+- name: Save current kernel version
+  command: uname -r
+  register: current_kernel
+  changed_when: false
+
+- name: Display current kernel
+  debug:
+    var: current_kernel.stdout
+
+- name: Save installed package list
+  shell: |
+    rpm -qa | sort > /tmp/packages_before_patch.txt
+  changed_when: false
