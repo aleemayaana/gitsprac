@@ -5,12 +5,12 @@
   tasks:
 
     - name: Pre Update Tasks
-      include_tasks: roles/01pre-update/tasks/main.yaml
+      include_tasks: roles/01pre-update/tasks/main.yml
 
     - name: Yum Update Tasks
-      include_tasks: roles/02yum-update/tasks/main.yaml
+      include_tasks: roles/02yum-update/tasks/main.yml
 
     - name: Post Update Tasks
-      include_tasks: roles/03post-update/tasks/main.yaml
+      include_tasks: roles/03post-update/tasks/main.yml
 
 For enterprise patching, I recommend:
