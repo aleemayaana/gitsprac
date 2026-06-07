@@ -1,1 +1,16 @@
+---
+- hosts: all
+  become: yes
 
+  tasks:
+
+    - name: Pre Update Tasks
+      include_tasks: roles/01pre-update/tasks/main.yaml
+
+    - name: Yum Update Tasks
+      include_tasks: roles/02yum-update/tasks/main.yaml
+
+    - name: Post Update Tasks
+      include_tasks: roles/03post-update/tasks/main.yaml
+
+For enterprise patching, I recommend:
